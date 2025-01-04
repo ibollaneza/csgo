@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana CSGO Case Giveaway</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1d;
+            color: #f5f5f5;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #f39c12;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        input {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #f39c12;
+            color: #1a1a1d;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d35400;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        .link {
+            margin-top: 20px;
+            display: block;
+            font-size: 1.2em;
+            color: #f39c12;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            color: #d35400;
+        }
+    </style>
+</head>
+<body>
+    <h1>Solana CSGO Case Giveaway</h1>
+    <p>Enter your Solana wallet ID for a guaranteed CSGO weapon key!</p>
+
+    <div class="container">
+        <input type="text" id="wallet" placeholder="Enter your Solana wallet ID">
+        <button onclick="generateKey()">Get Your Key</button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        function generateKey() {
+            const walletInput = document.getElementById('wallet').value;
+            const walletPattern = /^[a-zA-Z0-9]{32,44}$/; // Solana wallet ID format
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = "";
+
+            if (!walletPattern.test(walletInput)) {
+                resultDiv.innerHTML = "<span style='color: red;'>Invalid Solana wallet ID. Please try again.</span>";
+                return;
+            }
+
+            const key = `CSGO-${Math.random().toString(36).substr(2, 5).toUpperCase()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+            resultDiv.innerHTML = `<span style='color: green;'>Congratulations! 🎉 Your weapon key: ${key}</span><br><a class="link" href="https://www.steampowered.com" target="_blank">Learn more about CS:GO keys</a>`;
+        }
+    </script>
+</body>
+</html>
