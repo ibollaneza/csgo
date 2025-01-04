@@ -5,28 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solana CSGO Case Giveaway</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #1a1a1d;
-            color: #f5f5f5;
-            text-align: center;
-            padding: 50px;
+            font-family: 'Orbitron', sans-serif;
+            background-color: #121212;
+            color: #eaeaea;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
+            text-align: center;
+            background-image: url('https://example.com/csgo-background.jpg'); /* Replace with a CS:GO related background */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background for better readability */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         h1 {
-            color: #f39c12;
+            color: #ffd700;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px #000000;
         }
 
-        .container {
-            margin-top: 20px;
+        p {
+            color: #ffffff;
+            font-size: 1.2em;
         }
 
         input {
             padding: 10px;
             width: 300px;
-            border: 1px solid #ccc;
+            border: 2px solid #ffd700;
             border-radius: 5px;
+            margin-top: 10px;
+            background-color: #333333;
+            color: #ffffff;
+            font-size: 1em;
         }
 
         button {
@@ -34,47 +63,61 @@
             margin-top: 10px;
             border: none;
             border-radius: 5px;
-            background-color: #f39c12;
-            color: #1a1a1d;
+            background-color: #ffd700;
+            color: #121212;
             font-weight: bold;
+            font-size: 1em;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         button:hover {
-            background-color: #d35400;
+            background-color: #e6b800;
         }
 
         .result {
             margin-top: 20px;
             font-size: 1.2em;
+            color: #00ff00;
         }
 
         .link {
             margin-top: 20px;
             display: block;
             font-size: 1.2em;
-            color: #f39c12;
+            color: #ffd700;
             text-decoration: none;
         }
 
         .link:hover {
-            color: #d35400;
+            color: #e6b800;
+        }
+
+        .follow-link {
+            font-size: 0.9em;
+            color: #ffd700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .follow-link:hover {
+            color: #e6b800;
         }
     </style>
 </head>
 <body>
-    <h1>Solana CSGO Case Giveaway</h1>
-    <p>Enter your Solana wallet ID for a guaranteed CSGO weapon key!</p>
+    <div class="main-content" id="form-container">
+        <h1>Solana CSGO Case Giveaway</h1>
+        <p>Enter your Solana wallet ID for a guaranteed CSGO weapon key!</p>
 
-    <div class="container">
         <input type="text" id="wallet" placeholder="Enter your Solana wallet ID">
-        <button onclick="generateKey()">Get Your Key</button>
+        <button onclick="checkAndGenerateKey()">Submit</button>
+
+        <div id="result" class="result"></div>
     </div>
 
-    <div id="result" class="result"></div>
-
     <script>
-        function generateKey() {
+        function checkAndGenerateKey() {
             const walletInput = document.getElementById('wallet').value;
             const walletPattern = /^[a-zA-Z0-9]{32,44}$/; // Solana wallet ID format
 
@@ -86,9 +129,20 @@
                 return;
             }
 
+            // Generate the key
             const key = `CSGO-${Math.random().toString(36).substr(2, 5).toUpperCase()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-            resultDiv.innerHTML = `<span style='color: green;'>Congratulations! 🎉 Your weapon key: ${key}</span><br><a class="link" href="https://www.steampowered.com" target="_blank">Learn more about CS:GO keys</a>`;
+
+            // Hide the form container
+            document.getElementById('form-container').innerHTML = `
+                <h1>Congratulations! 🎉</h1>
+                <div class="result">
+                    <span>Your weapon key: ${key}</span><br>
+                    <a class="link" href="https://www.steampowered.com" target="_blank">Learn more about CS:GO keys</a>
+                </div>
+            `;
         }
     </script>
+
+    <a class="follow-link" href="https://x.com/CsgoCagesSolana" target="_blank">Follow us on X (Twitter) to stay up to date.</a>
 </body>
 </html>
