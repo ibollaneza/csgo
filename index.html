@@ -10,16 +10,65 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
         #geometry-editor, #boundary-conditions, #simulation-controls, #results-visualization {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin: 10px;
+            width: 300px;
         }
         canvas {
-            border: 1px solid black;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         #results-visualization {
-            width: 800px;
+            width: 80%;
+            max-width: 800px;
             height: 600px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            width: 80%;
+            max-width: 800px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -29,15 +78,25 @@
     <div id="geometry-editor">
         <h2>Geometry Editor</h2>
         <label for="geometry-shape">Shape:</label>
-        <select id="geometry-shape">
+        <select id="geometry-shape" onchange="updateDimensionsInputs()">
             <option value="rectangle">Rectangle</option>
             <option value="circle">Circle</option>
             <option value="custom">Custom</option>
         </select>
-        <br>
-        <label for="geometry-dimensions">Dimensions:</label>
-        <input type="text" id="geometry-dimensions" placeholder="e.g., 10x5 or diameter 5">
-        <br>
+        <div id="rectangle-inputs" class="shape-inputs">
+            <label for="rect-width">Width:</label>
+            <input type="number" id="rect-width" placeholder="e.g., 10" step="0.1">
+            <label for="rect-height">Height:</label>
+            <input type="number" id="rect-height" placeholder="e.g., 5" step="0.1">
+        </div>
+        <div id="circle-inputs" class="shape-inputs hidden">
+            <label for="circle-radius">Radius:</label>
+            <input type="number" id="circle-radius" placeholder="e.g., 5" step="0.1">
+        </div>
+        <div id="custom-inputs" class="shape-inputs hidden">
+            <label for="custom-dimensions">Custom Dimensions:</label>
+            <input type="text" id="custom-dimensions" placeholder="Define custom dimensions">
+        </div>
         <label for="geometry-position">Position:</label>
         <input type="text" id="geometry-position" placeholder="e.g., x=0, y=0">
     </div>
@@ -45,11 +104,9 @@
     <div id="boundary-conditions">
         <h2>Boundary Conditions</h2>
         <label for="inlet-velocity">Inlet Velocity:</label>
-        <input type="text" id="inlet-velocity" placeholder="e.g., 1 m/s">
-        <br>
+        <input type="number" id="inlet-velocity" placeholder="e.g., 1" min="0" step="0.1">
         <label for="outlet-pressure">Outlet Pressure:</label>
-        <input type="text" id="outlet-pressure" placeholder="e.g., 0 Pa">
-        <br>
+        <input type="number" id="outlet-pressure" placeholder="e.g., 0" step="1">
         <label for="wall-condition">Wall Condition:</label>
         <select id="wall-condition">
             <option value="no-slip">No Slip</option>
@@ -70,10 +127,193 @@
 
     <div id="results-visualization">
         <h2>Results Visualization</h2>
-        <canvas id="visualization-canvas"></canvas>
+        <canvas id="visualization-canvas" width="800" height="600"></canvas>
     </div>
 
+    <div id="status">Awaiting simulation...</div>
+
+    <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Function to update the dimensions inputs based on the selected shape
+        function updateDimensionsInputs() {
+            const shape = document.getElementById('geometry-shape').value;
+            document.querySelectorAll('.shape-inputs').forEach(input => input.classList.add('hidden'));
+            if (shape === 'rectangle') {
+                document.getElementById('rectangle-inputs').classList.remove('hidden');
+            } else if (shape === 'circle') {
+                document.getElementById('circle-inputs').classList.remove('hidden');
+            } else if (shape === 'custom') {
+                document.getElementById('custom-inputs').classList.remove('hidden');
+            }
+        }
+
+        // Function to mock the simulation process
+        function mockRunSimulation(geometry, boundaryConditions, model) {
+            return new Promise((resolve) => {
+                console.log('Mock simulation started');
+                // Simulate computation delay
+                setTimeout(() => {
+                    console.log('Mock simulation completed');
+                    // Mock result data
+                    const result = {
+                        velocityField: [
+                            { x: 1, y: 2, z: 0 },
+                            { x: 2, y: 1, z: 0 },
+                            { x: 0, y: 1, z: 2 },
+                            // ... more data points
+                        ],
+                        pressureField: [
+                            100, 150, 200, // ... more data points
+                        ],
+                        geometry: geometry
+                    };
+                    resolve(result);
+                }, 2000); // 2-second delay to mimic computation
+            });
+        }
+
+        // Function to initialize Three.js visualization
+        function initializeVisualization(canvas) {
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(canvas.width, canvas.height);
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+
+            const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            camera.position.z = 50;
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+
+            // Add directional light
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(1, 1, 1).normalize();
+            scene.add(directionalLight);
+
+            return { renderer, scene, camera, controls };
+        }
+
+        // Function to visualize mock simulation results
+        function visualizeResults(result, visualizationComponents) {
+            const { scene } = visualizationComponents;
+
+            // Clear previous objects
+            while (scene.children.length > 0) { 
+                scene.remove(scene.children[0]); 
+            }
+
+            // Add axes helper
+            const axesHelper = new THREE.AxesHelper(20);
+            scene.add(axesHelper);
+
+            // Visualize velocity field as arrows
+            const velocityField = result.velocityField;
+            const arrowMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            velocityField.forEach(vector => {
+                const arrowGeometry = new THREE.ConeGeometry(0.5, 2, 8);
+                const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+                arrow.position.set(vector.x * 5, vector.y * 5, vector.z * 5);
+                arrow.rotation.x = Math.PI / 2;
+                scene.add(arrow);
+            });
+
+            // Visualize geometry as a simple shape based on input
+            const geometryInput = result.geometry;
+            let geometryObj;
+            switch (geometryInput.shape) {
+                case 'rectangle':
+                    const rectWidth = parseFloat(document.getElementById('rect-width').value);
+                    const rectHeight = parseFloat(document.getElementById('rect-height').value);
+                    geometryObj = new THREE.BoxGeometry(rectWidth, rectHeight, 1);
+                    break;
+                case 'circle':
+                    const radius = parseFloat(document.getElementById('circle-radius').value);
+                    geometryObj = new THREE.CircleGeometry(radius, 32);
+                    break;
+                case 'custom':
+                    geometryObj = new THREE.SphereGeometry(5, 32, 32); // Placeholder for custom geometry
+                    break;
+                default:
+                    geometryObj = new THREE.BoxGeometry(10, 5, 1);
+            }
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+            const shape = new THREE.Mesh(geometryObj, material);
+            scene.add(shape);
+        }
+
+        document.getElementById('run-simulation').addEventListener('click', async function() {
+            // Collect input values
+            const shape = document.getElementById('geometry-shape').value;
+            let dimensions;
+            if (shape === 'rectangle') {
+                dimensions = `width=${document.getElementById('rect-width').value}, height=${document.getElementById('rect-height').value}`;
+            } else if (shape === 'circle') {
+                dimensions = `radius=${document.getElementById('circle-radius').value}`;
+            } else if (shape === 'custom') {
+                dimensions = document.getElementById('custom-dimensions').value;
+            }
+            const geometry = {
+                shape: shape,
+                dimensions: dimensions,
+                position: document.getElementById('geometry-position').value
+            };
+            const boundaryConditions = {
+                inletVelocity: parseFloat(document.getElementById('inlet-velocity').value) || 0,
+                outletPressure: parseFloat(document.getElementById('outlet-pressure').value) || 0,
+                wallCondition: document.getElementById('wall-condition').value
+            };
+            const model = document.getElementById('model-select').value;
+
+            console.log('Running simulation with the following parameters:');
+            console.log('Geometry:', geometry);
+            console.log('Boundary Conditions:', boundaryConditions);
+            console.log('Turbulence Model:', model);
+
+            // Update status
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'Running simulation... Please wait.';
+
+            try {
+                // Mock simulation function
+                const result = await mockRunSimulation(geometry, boundaryConditions, model);
+
+                console.log('Simulation result:', result);
+
+                // Visualization
+                const canvas = document.getElementById('visualization-canvas');
+                // Initialize visualization components only once
+                if (!canvas.initialized) {
+                    window.visualizationComponents = initializeVisualization(canvas);
+                    canvas.initialized = true;
+                }
+                const { renderer, scene, camera, controls } = window.visualizationComponents;
+
+                visualizeResults(result, window.visualizationComponents);
+
+                // Animation loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                // Update status
+                statusDiv.textContent = 'Simulation completed successfully.';
+            } catch (error) {
+                console.error('Error running simulation:', error);
+                statusDiv.textContent = 'Error running simulation. Check console for details.';
+            }
+        });
+
+        // Initialize placeholder on page load
+        updateDimensionsInputs();
+    </script>
 </body>
 </html>
